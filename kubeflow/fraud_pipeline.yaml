@@ -1,0 +1,165 @@
+# PIPELINE DEFINITION
+# Name: fraud-retrain
+# Description: Reentrainement du modele de fraude depuis HDFS
+# Inputs:
+#    data_path: str [Default: 'hdfs://namenode:9000/lake/transactions/']
+#    gold_path: str [Default: 'hdfs://namenode:9000/lake/gold/']
+#    minio_endpoint: str [Default: 'http://minio:9000']
+#    mlflow_uri: str [Default: 'http://mlflow:5000']
+components:
+  comp-check-hdfs:
+    executorLabel: exec-check-hdfs
+    inputDefinitions:
+      parameters:
+        data_path:
+          parameterType: STRING
+  comp-prepare-data:
+    executorLabel: exec-prepare-data
+    inputDefinitions:
+      parameters:
+        data_path:
+          parameterType: STRING
+        gold_path:
+          parameterType: STRING
+  comp-train-and-register:
+    executorLabel: exec-train-and-register
+    inputDefinitions:
+      parameters:
+        data_path:
+          parameterType: STRING
+        minio_endpoint:
+          parameterType: STRING
+        mlflow_uri:
+          parameterType: STRING
+  comp-verify-registry:
+    executorLabel: exec-verify-registry
+    inputDefinitions:
+      parameters:
+        mlflow_uri:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-check-hdfs:
+      container:
+        args:
+        - --data-path
+        - '{{$.inputs.parameters[''data_path'']}}'
+        command:
+        - python
+        - /app/check_hdfs.py
+        image: fraud-train:v1
+    exec-prepare-data:
+      container:
+        args:
+        - --data-path
+        - '{{$.inputs.parameters[''data_path'']}}'
+        - --gold-path
+        - '{{$.inputs.parameters[''gold_path'']}}'
+        command:
+        - python
+        - /app/batch_job.py
+        image: fraud-train:v1
+    exec-train-and-register:
+      container:
+        args:
+        - --minio-endpoint
+        - '{{$.inputs.parameters[''minio_endpoint'']}}'
+        - --mlflow-uri
+        - '{{$.inputs.parameters[''mlflow_uri'']}}'
+        - --data-path
+        - '{{$.inputs.parameters[''data_path'']}}'
+        command:
+        - python
+        - /app/train.py
+        image: fraud-train:v1
+    exec-verify-registry:
+      container:
+        args:
+        - --mlflow-uri
+        - '{{$.inputs.parameters[''mlflow_uri'']}}'
+        command:
+        - python
+        - /app/verify_registry.py
+        image: fraud-train:v1
+pipelineInfo:
+  description: Reentrainement du modele de fraude depuis HDFS
+  name: fraud-retrain
+root:
+  dag:
+    tasks:
+      check-hdfs:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-check-hdfs
+        inputs:
+          parameters:
+            data_path:
+              componentInputParameter: data_path
+        taskInfo:
+          name: check-hdfs
+      prepare-data:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-prepare-data
+        dependentTasks:
+        - check-hdfs
+        inputs:
+          parameters:
+            data_path:
+              componentInputParameter: data_path
+            gold_path:
+              componentInputParameter: gold_path
+        taskInfo:
+          name: prepare-data
+      train-and-register:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-train-and-register
+        dependentTasks:
+        - prepare-data
+        inputs:
+          parameters:
+            data_path:
+              componentInputParameter: data_path
+            minio_endpoint:
+              componentInputParameter: minio_endpoint
+            mlflow_uri:
+              componentInputParameter: mlflow_uri
+        taskInfo:
+          name: train-and-register
+      verify-registry:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-verify-registry
+        dependentTasks:
+        - train-and-register
+        inputs:
+          parameters:
+            mlflow_uri:
+              componentInputParameter: mlflow_uri
+        taskInfo:
+          name: verify-registry
+  inputDefinitions:
+    parameters:
+      data_path:
+        defaultValue: hdfs://namenode:9000/lake/transactions/
+        isOptional: true
+        parameterType: STRING
+      gold_path:
+        defaultValue: hdfs://namenode:9000/lake/gold/
+        isOptional: true
+        parameterType: STRING
+      minio_endpoint:
+        defaultValue: http://minio:9000
+        isOptional: true
+        parameterType: STRING
+      mlflow_uri:
+        defaultValue: http://mlflow:5000
+        isOptional: true
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.13.0

@@ -1,0 +1,335 @@
+{
+  "generated_at": "2026-11-18T23:37:38",
+  "rows_raw": 64896,
+  "rows_clean": 64896,
+  "global": {
+    "nb_tx": 64896,
+    "nb_fraudes": 1312,
+    "taux_fraude_pct": 2.02,
+    "montant_moyen": 77.61,
+    "montant_max": 2880.32,
+    "nb_clients": 2000,
+    "debut": "2026-11-18 22:03:08.738146",
+    "fin": "2026-11-18 23:03:40.260321"
+  },
+  "top_clients": [
+    {
+      "user_id": 1383,
+      "nb_tx": 34,
+      "montant_total": 6691.24,
+      "montant_moyen": 196.8,
+      "nb_fraudes": 2
+    },
+    {
+      "user_id": 137,
+      "nb_tx": 35,
+      "montant_total": 6270.04,
+      "montant_moyen": 179.14,
+      "nb_fraudes": 0
+    },
+    {
+      "user_id": 509,
+      "nb_tx": 38,
+      "montant_total": 5764.65,
+      "montant_moyen": 151.7,
+      "nb_fraudes": 2
+    },
+    {
+      "user_id": 486,
+      "nb_tx": 32,
+      "montant_total": 5725.72,
+      "montant_moyen": 178.93,
+      "nb_fraudes": 2
+    },
+    {
+      "user_id": 932,
+      "nb_tx": 40,
+      "montant_total": 5594.37,
+      "montant_moyen": 139.86,
+      "nb_fraudes": 0
+    },
+    {
+      "user_id": 644,
+      "nb_tx": 41,
+      "montant_total": 5519.65,
+      "montant_moyen": 134.63,
+      "nb_fraudes": 2
+    },
+    {
+      "user_id": 430,
+      "nb_tx": 36,
+      "montant_total": 5474.3,
+      "montant_moyen": 152.06,
+      "nb_fraudes": 1
+    },
+    {
+      "user_id": 529,
+      "nb_tx": 34,
+      "montant_total": 5341.72,
+      "montant_moyen": 157.11,
+      "nb_fraudes": 1
+    },
+    {
+      "user_id": 285,
+      "nb_tx": 46,
+      "montant_total": 5252.2,
+      "montant_moyen": 114.18,
+      "nb_fraudes": 3
+    },
+    {
+      "user_id": 7,
+      "nb_tx": 47,
+      "montant_total": 5119.25,
+      "montant_moyen": 108.92,
+      "nb_fraudes": 0
+    }
+  ],
+  "by_merchant": [
+    {
+      "merchant": "online",
+      "nb_tx": 8385,
+      "montant_moyen": 78.73,
+      "nb_fraudes": 268,
+      "taux_fraude_pct": 3.2
+    },
+    {
+      "merchant": "travel",
+      "nb_tx": 8324,
+      "montant_moyen": 80.57,
+      "nb_fraudes": 233,
+      "taux_fraude_pct": 2.8
+    },
+    {
+      "merchant": "electronics",
+      "nb_tx": 8308,
+      "montant_moyen": 79.3,
+      "nb_fraudes": 294,
+      "taux_fraude_pct": 3.54
+    },
+    {
+      "merchant": "fuel",
+      "nb_tx": 8085,
+      "montant_moyen": 74.99,
+      "nb_fraudes": 62,
+      "taux_fraude_pct": 0.77
+    },
+    {
+      "merchant": "luxury",
+      "nb_tx": 8067,
+      "montant_moyen": 79.83,
+      "nb_fraudes": 262,
+      "taux_fraude_pct": 3.25
+    },
+    {
+      "merchant": "atm",
+      "nb_tx": 8067,
+      "montant_moyen": 75.23,
+      "nb_fraudes": 70,
+      "taux_fraude_pct": 0.87
+    },
+    {
+      "merchant": "grocery",
+      "nb_tx": 7832,
+      "montant_moyen": 75.97,
+      "nb_fraudes": 61,
+      "taux_fraude_pct": 0.78
+    },
+    {
+      "merchant": "restaurant",
+      "nb_tx": 7828,
+      "montant_moyen": 75.96,
+      "nb_fraudes": 62,
+      "taux_fraude_pct": 0.79
+    }
+  ],
+  "by_country": [
+    {
+      "country": "MA",
+      "nb_tx": 59581,
+      "nb_fraudes": 372,
+      "taux_fraude_pct": 0.62
+    },
+    {
+      "country": "ES",
+      "nb_tx": 918,
+      "nb_fraudes": 162,
+      "taux_fraude_pct": 17.65
+    },
+    {
+      "country": "AE",
+      "nb_tx": 901,
+      "nb_fraudes": 162,
+      "taux_fraude_pct": 17.98
+    },
+    {
+      "country": "CN",
+      "nb_tx": 897,
+      "nb_fraudes": 155,
+      "taux_fraude_pct": 17.28
+    },
+    {
+      "country": "US",
+      "nb_tx": 892,
+      "nb_fraudes": 159,
+      "taux_fraude_pct": 17.83
+    },
+    {
+      "country": "FR",
+      "nb_tx": 863,
+      "nb_fraudes": 144,
+      "taux_fraude_pct": 16.69
+    },
+    {
+      "country": "DE",
+      "nb_tx": 844,
+      "nb_fraudes": 158,
+      "taux_fraude_pct": 18.72
+    }
+  ],
+  "by_hour": [
+    {
+      "hour": 0,
+      "nb_tx": 743,
+      "nb_fraudes": 153,
+      "taux_fraude_pct": 20.59
+    },
+    {
+      "hour": 1,
+      "nb_tx": 729,
+      "nb_fraudes": 140,
+      "taux_fraude_pct": 19.2
+    },
+    {
+      "hour": 2,
+      "nb_tx": 760,
+      "nb_fraudes": 151,
+      "taux_fraude_pct": 19.87
+    },
+    {
+      "hour": 3,
+      "nb_tx": 742,
+      "nb_fraudes": 139,
+      "taux_fraude_pct": 18.73
+    },
+    {
+      "hour": 4,
+      "nb_tx": 787,
+      "nb_fraudes": 144,
+      "taux_fraude_pct": 18.3
+    },
+    {
+      "hour": 5,
+      "nb_tx": 1239,
+      "nb_fraudes": 32,
+      "taux_fraude_pct": 2.58
+    },
+    {
+      "hour": 6,
+      "nb_tx": 1799,
+      "nb_fraudes": 21,
+      "taux_fraude_pct": 1.17
+    },
+    {
+      "hour": 7,
+      "nb_tx": 3019,
+      "nb_fraudes": 26,
+      "taux_fraude_pct": 0.86
+    },
+    {
+      "hour": 8,
+      "nb_tx": 3593,
+      "nb_fraudes": 22,
+      "taux_fraude_pct": 0.61
+    },
+    {
+      "hour": 9,
+      "nb_tx": 3653,
+      "nb_fraudes": 35,
+      "taux_fraude_pct": 0.96
+    },
+    {
+      "hour": 10,
+      "nb_tx": 3695,
+      "nb_fraudes": 19,
+      "taux_fraude_pct": 0.51
+    },
+    {
+      "hour": 11,
+      "nb_tx": 4149,
+      "nb_fraudes": 25,
+      "taux_fraude_pct": 0.6
+    },
+    {
+      "hour": 12,
+      "nb_tx": 4731,
+      "nb_fraudes": 25,
+      "taux_fraude_pct": 0.53
+    },
+    {
+      "hour": 13,
+      "nb_tx": 4130,
+      "nb_fraudes": 30,
+      "taux_fraude_pct": 0.73
+    },
+    {
+      "hour": 14,
+      "nb_tx": 3632,
+      "nb_fraudes": 18,
+      "taux_fraude_pct": 0.5
+    },
+    {
+      "hour": 15,
+      "nb_tx": 3625,
+      "nb_fraudes": 35,
+      "taux_fraude_pct": 0.97
+    },
+    {
+      "hour": 16,
+      "nb_tx": 3637,
+      "nb_fraudes": 20,
+      "taux_fraude_pct": 0.55
+    },
+    {
+      "hour": 17,
+      "nb_tx": 4333,
+      "nb_fraudes": 29,
+      "taux_fraude_pct": 0.67
+    },
+    {
+      "hour": 18,
+      "nb_tx": 4893,
+      "nb_fraudes": 25,
+      "taux_fraude_pct": 0.51
+    },
+    {
+      "hour": 19,
+      "nb_tx": 4133,
+      "nb_fraudes": 28,
+      "taux_fraude_pct": 0.68
+    },
+    {
+      "hour": 20,
+      "nb_tx": 3082,
+      "nb_fraudes": 28,
+      "taux_fraude_pct": 0.91
+    },
+    {
+      "hour": 21,
+      "nb_tx": 1796,
+      "nb_fraudes": 16,
+      "taux_fraude_pct": 0.89
+    },
+    {
+      "hour": 22,
+      "nb_tx": 1231,
+      "nb_fraudes": 15,
+      "taux_fraude_pct": 1.22
+    },
+    {
+      "hour": 23,
+      "nb_tx": 765,
+      "nb_fraudes": 136,
+      "taux_fraude_pct": 17.78
+    }
+  ]
+}

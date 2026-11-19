@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraud-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: fraud-api}
+  template:
+    metadata:
+      labels: {app: fraud-api}
+    spec:
+      containers:
+        - name: fraud-api
+          image: fraud-pipeline-fraud-api:latest   # charge dans kind : kind load docker-image fraud-pipeline-fraud-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: fraud-api-config            # genere par chaque overlay (staging / preprod)
+            - secretRef:
+                name: fraud-api-minio             # genere par chaque overlay (secretGenerator)
+          readinessProbe:
+            httpGet: {path: /health, port: 8000}
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests: {memory: 512Mi, cpu: 250m}
+            limits: {memory: 1536Mi}

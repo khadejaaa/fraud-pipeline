@@ -1,0 +1,10 @@
+# Image utilisee par les etapes du pipeline Kubeflow (verification HDFS, preparation, entrainement, controle du registre)
+FROM python:3.11-slim-bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends openjdk-17-jre-headless \
+    && ln -s /usr/lib/jvm/java-17-openjdk-* /usr/lib/jvm/java && rm -rf /var/lib/apt/lists/*
+ENV JAVA_HOME=/usr/lib/jvm/java
+RUN pip install --no-cache-dir pyspark==3.5.1 mlflow==2.14.1 boto3 numpy
+COPY spark/train.py /app/train.py
+COPY batch/batch_job.py /app/batch_job.py
+COPY kubeflow/scripts/check_hdfs.py /app/check_hdfs.py
+COPY kubeflow/scripts/verify_registry.py /app/verify_registry.py

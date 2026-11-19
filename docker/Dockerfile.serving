@@ -1,0 +1,9 @@
+# API de prediction (FastAPI + Spark local + MLflow)
+FROM python:3.11-slim-bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends openjdk-17-jre-headless \
+    && ln -s /usr/lib/jvm/java-17-openjdk-* /usr/lib/jvm/java && rm -rf /var/lib/apt/lists/*
+ENV JAVA_HOME=/usr/lib/jvm/java
+RUN pip install --no-cache-dir pyspark==3.5.1 mlflow==2.14.1 boto3 numpy fastapi "uvicorn[standard]"
+WORKDIR /app
+COPY serving/app.py /app/app.py
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv*/
+train_log.txt
+tx_*.json
+.ipynb_checkpoints/

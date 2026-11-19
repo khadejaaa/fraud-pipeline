@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: preprod
+resources:
+  - ../../base
+  - namespace.yaml
+configMapGenerator:
+  - name: fraud-api-config
+    literals:
+      # Alias du registre MLflow servi dans cet environnement (preprod)
+      - MODEL_URI=models:/fraud-detector@preprod
+      - MODEL_VERSION=1
+      # MLflow et MinIO tournent dans docker compose sur la machine : joignables depuis kind via host.docker.internal
+      - MLFLOW_TRACKING_URI=http://host.docker.internal:5000
+      - MLFLOW_S3_ENDPOINT_URL=http://host.docker.internal:9000
+secretGenerator:
+  - name: fraud-api-minio
+    literals:
+      # Identifiants MinIO de DEV (docker compose). En vrai : SealedSecrets / External Secrets, jamais en clair dans Git.
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin

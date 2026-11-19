@@ -1,0 +1,156 @@
+services:
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka
+    ports: ["29092:29092"]
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:29092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  # ---------- HDFS : stockage distribue (donnees du streaming et du batch) ----------
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    environment:
+      CLUSTER_NAME: fraud
+    env_file: [./hadoop/hadoop.env]
+    ports: ["9870:9870"]   # interface web HDFS (le port 9000 reste interne, MinIO l utilise sur la machine)
+    volumes: [hdfs_namenode:/hadoop/dfs/name]
+
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
+    depends_on: [namenode]
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file: [./hadoop/hadoop.env]
+    volumes: [hdfs_datanode:/hadoop/dfs/data]
+
+  # ---------- MinIO : uniquement pour les artefacts MLflow ----------
+  minio:
+    image: docker.io/pgsty/silo:latest   # fork communautaire de MinIO (minio/minio a ete supprime de Docker Hub)
+    container_name: minio
+    command: server /data --console-address ":9001"
+    ports: ["9000:9000", "9001:9001"]
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes: [minio_data:/data]
+
+  minio-init:
+    image: amazon/aws-cli:latest
+    depends_on: [minio]
+    environment:
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for b in lake mlflow; do
+          until aws --endpoint-url http://minio:9000 s3api head-bucket --bucket $$b 2>/dev/null \
+             || aws --endpoint-url http://minio:9000 s3 mb s3://$$b; do
+            echo "attente de MinIO..."; sleep 3
+          done
+        done
+        echo "buckets lake et mlflow prets"
+
+  spark-streaming:
+    build: {context: ., dockerfile: docker/Dockerfile.spark}
+    container_name: spark-streaming
+    depends_on:
+      kafka: {condition: service_started}
+      datanode: {condition: service_started}
+    environment:
+      HADOOP_USER_NAME: root
+    volumes: ["./spark:/opt/project/spark"]
+    command: >
+      /opt/spark/bin/spark-submit
+      --conf spark.jars.ivy=/tmp/.ivy
+      --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1
+      /opt/project/spark/streaming_job.py
+    restart: on-failure
+
+  mlflow:
+    build: {context: ., dockerfile: docker/Dockerfile.mlflow}
+    container_name: mlflow
+    depends_on:
+      minio-init: {condition: service_completed_successfully}
+    ports: ["5000:5000"]
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:///mlflow.db
+      --default-artifact-root s3://mlflow/
+
+  airflow:
+    build: {context: ., dockerfile: docker/Dockerfile.airflow}
+    container_name: airflow
+    depends_on:
+      mlflow: {condition: service_started}
+      minio-init: {condition: service_completed_successfully}
+      datanode: {condition: service_started}
+    ports: ["8085:8080"]
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      HADOOP_USER_NAME: root
+      REPORTS_DIR: /opt/project/reports
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./spark:/opt/project/spark
+      - ./batch:/opt/project/batch
+      - ./report:/opt/project/report
+      - ./reports:/opt/project/reports
+      - ./scripts:/opt/project/scripts
+    command: standalone
+
+  # ---------- Deploiement du modele : API de prediction ----------
+  fraud-api:
+    build: {context: ., dockerfile: docker/Dockerfile.serving}
+    container_name: fraud-api
+    image: fraud-pipeline-fraud-api:latest   # nom fige : reference par k8s/base/deployment.yaml (kind load docker-image)
+    depends_on:
+      mlflow: {condition: service_started}
+    ports: ["8000:8000"]
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+    restart: on-failure
+
+  # ---------- Jupyter : construction du modele par l'Analyst (schema du prof) ----------
+  jupyter:
+    build: {context: ., dockerfile: docker/Dockerfile.jupyter}
+    container_name: jupyter
+    depends_on:
+      datanode: {condition: service_started}
+      mlflow: {condition: service_started}
+    ports: ["8888:8888"]   # http://localhost:8888/?token=fraud
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      HADOOP_USER_NAME: root
+    volumes: ["./notebooks:/work"]
+
+volumes:
+  hdfs_namenode:
+  hdfs_datanode:
+  minio_data:
